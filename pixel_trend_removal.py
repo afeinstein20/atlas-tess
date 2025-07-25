@@ -7,69 +7,103 @@ from tqdm import tqdm
 import pandas as pd
 from scipy.signal import savgol_filter
 import matplotlib.animation as animation
+from astropy.time import Time
 
+which='1-2'
+#which = '2-3'
+target='3I'
+flipped = True
+inpath = f'/home/adina/.eleanor/ffis/s0092/{which}/raw'
+outpath = os.path.join(inpath[:-4], 'pixel')
 
-which='2-3'
-target='A918PE'
-inpath = f'/home/adina/.eleanor/ffis/s0092/{which}/{target}'
-outpath = os.path.join(inpath, target)
+if which == '2-3':
+    start, end = 0, 4399
+elif which == '1-2':
+    start, end = 280, 5718
 
 files = np.sort([os.path.join(inpath, i) for i in os.listdir(inpath) if i.endswith('.fits')])
-files = files
+files = files[start:end]
 
-tab = Table.read(f'JPL_Horizons_{which}_{target}.csv', format='csv')
-y1, y2 = int(np.nanmin(tab['y'])), int(np.nanmax(tab['y']))
-x1, x2 = int(np.nanmin(tab['x'])), int(np.nanmax(tab['x']))
+coords = Table.read(f'/home/adina/.eleanor/ffis/s0092/locs_{which}.csv', format='csv')
+coords.sort('file')
+_, u = np.unique(coords['file'], return_index=True)
+coords = coords[u]
 
-xpad = 48 # extra pixel padding
-ypad = 30
+search_fn_start = '/'.join(e for e in files[0].split('/')[-3:])
+search_fn_end   = '/'.join(e for e in files[-1].split('/')[-3:])
+start_arg = np.where(coords['file'] == search_fn_start)[0][0]
+end_arg   = np.where(coords['file'] == search_fn_end)[0][0]
+coords = coords[start_arg : end_arg]
 
-xshape = (x2+xpad) - (x1-xpad)
-yshape = (y2+ypad) - (y1-ypad)
+pad = 20
+xlow, xupp = np.nanmin(coords['x']) - pad, np.nanmax(coords['x']) + pad
+ylow, yupp = np.nanmin(coords['y']) - pad, np.nanmax(coords['y']) + pad
 
-pixel_filename = f'pixels_{which}_{target}_x1-{x1}_x2-{x2}_y1-{y1}_y2-{y2}.npy'
-model_filename = f'models_{which}_{target}_x1-{x1}_x2-{x2}_y1-{y1}_y2-{y2}.npy'
+print(start_arg, end_arg)
+print(xlow, xupp, ylow, yupp)
+
+if xlow < 0:
+    xlow = 0
+if ylow < 0:
+    ylow = 0
+
+if flipped:
+    ext = '_flipped.npy'
+else:
+    ext = '.npy'
+
+output_name = f'pixels_{which}_{target}_xlow-{int(xlow)}_ylow-{int(ylow)}{ext}'
+
+output = {}
+
+times = np.zeros(len(files))
 
 ######################
 # Load in the pixels #
 ######################
+for i in tqdm(range(len(files))):
+    hdu = fits.open(files[i])
 
-if os.path.isfile(pixel_filename) == True:
-    stacked_cutouts = np.load(pixel_filename) # Loads in file if it exists
+    if flipped:
+        cutout = hdu[1].data[int(ylow):int(yupp), int(xlow):int(xupp)]
+        output['shape'] = (len(files), cutout.shape[0], cutout.shape[1])
+        output['extent'] = (ylow, yupp, xlow, xupp)
+    else:
+        cutout = hdu[1].data[int(xlow):int(xupp), int(ylow):int(yupp)]
+        output['shape'] = (len(files), cutout.shape[0], cutout.shape[1])
+        output['extent'] = (xlow, xupp, ylow, yupp)
 
-else:
-    for i in tqdm(range(len(files))):
-        hdu = fits.open(files[i])
+    if i == 0:
+        stacked_cutouts = np.zeros((len(files), len(cutout.flatten())))
 
-        cutout = hdu[1].data[x1-xpad:x2+xpad, y1-ypad:y2+ypad].flatten()
+    #stacked_cutouts[i] = cutout * 1.0
+    stacked_cutouts[i] = cutout.flatten() * 1.0
 
-        if i == 0:
-            stacked_cutouts = np.zeros((len(files), len(cutout)))
+    date_start = Time(hdu[1].header['DATE-OBS'], scale='utc').mjd
+    date_end   = Time(hdu[1].header['DATE-END'], scale='utc').mjd
+    times[i] = (date_start + date_end) / 2.0
 
-        stacked_cutouts[i] = cutout * 1.0
+    hdu.close()
 
-        hdu.close()
-
-    np.save(pixel_filename, stacked_cutouts)
+output['pixels'] = stacked_cutouts
+output['time'] = times
 
 ###########################################
 # Create a table of models for each pixel #
 ###########################################
+models = np.zeros(stacked_cutouts.shape)
 
-if os.path.isfile(model_filename) == True:
-    models = np.load(model_filename) # Loads in file if it exists
-else:
-    models = np.zeros(stacked_cutouts.shape)
+for i in tqdm(range(stacked_cutouts.shape[1])):
+    m = savgol_filter(stacked_cutouts[:,i], window_length=307, polyorder=2)
+    models[:,i] = m
 
-    for i in tqdm(range(stacked_cutouts.shape[1])):
-        m = savgol_filter(stacked_cutouts[:,i], window_length=307, polyorder=2)
-        models[:,i] = m
-
-    np.save(model_filename, models)
+output['models'] = models
+np.save(output_name, output)
 
 ##################################
 # Remove the savgol filter trend #
 ##################################
+"""
 removed = stacked_cutouts - models
 
 removed = removed.reshape( (len(files), xshape, yshape))
@@ -86,28 +120,34 @@ for i in range(500,1000):#len(files)):
 ani = animation.ArtistAnimation(fig, frames, interval=50, blit=True,
                                 repeat_delay=1000)
 ani.save(f'cutout_{which}_{target}.gif')
-
+"""
 #################################################
 # Create the FITS files with the removed trends #
 #################################################
 """
+removed = stacked_cutouts.reshape(output['shape']) - models.reshape(output['shape'])
+
 for i in tqdm(range(len(files))):
     hdu = fits.open(files[i])
 
-    new_fits = files[i].split('/')[-1].split('.fits')[0] + '_rmv.fits'
-    new_fits = os.path.join(outpath, new_fits)
+    if flipped:
+        ext = '_flipped_rmv.fits'
+    else:
+        ext = '_rmv.fits'
 
-    reshaped = removed[i].reshape((yshape, xshape))
+    new_fits = files[i].split('/')[-1].split('.fits')[0] + ext
+    new_fits = os.path.join(outpath, new_fits)
 
     #fig, (ax1, ax2, ax3) = plt.subplots(ncols=3, figsize=(14,4), sharex=True, sharey=True)
     #ax1.imshow(hdu[1].data[y1-pad:y2+pad, x1-pad:x2+pad], vmin=0, vmax=1000)
     #ax2.imshow(stacked_cutouts[i].reshape((yshape, xshape)), vmin=0, vmax=1000)
     #ax3.imshow(reshaped, vmin=0, vmax=100)
     #plt.show()
+    if flipped:
+        hdu[1].data[int(ylow):int(yupp), int(xlow):int(xupp)] = removed[i]
+    else:
+        hdu[1].data[int(xlow):int(xupp), int(ylow):int(yupp)] = removed[i]
 
-    hdu[1].data[y1-pad:y2+pad, x1-pad:x2+pad] = reshaped
     hdu.writeto(new_fits, overwrite=True)
     hdu.close()
-
-    os.system('rm {}'.format(files[i]))
 """
