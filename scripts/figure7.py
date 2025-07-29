@@ -1,5 +1,10 @@
 """
-Figure originally created by Henry Hsieh
+Figure originally created by Henry Hsieh.
+
+If you use data from this figure, please cite:
+- Ye et al. (2020) https://iopscience.iop.org/article/10.3847/1538-3881/ab659b
+- Seligman et al. (2025) https://ui.adsabs.harvard.edu/abs/2025arXiv250702757S/abstract
+- Feinstein, Noonan, and Seligman (submitted)
 """
 
 import numpy as np
