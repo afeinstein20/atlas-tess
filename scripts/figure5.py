@@ -11,13 +11,6 @@ rc = Table.read('../rcParams.txt', format='csv')
 for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
 
-def convert_mag(counts):
-    # Converts counts/second to magnitude
-    # From the TESS handbook
-    dur = (len(counts) * 200 * units.s)
-    dur = dur.value
-    return -2.5 * np.log10(counts/200) + 20.44
-
 first = np.load('../data/stacked_3I_2-3.npy', allow_pickle=True).item()
 second= np.load('../data/stacked_3I_1-2.npy', allow_pickle=True).item()
 
@@ -32,7 +25,16 @@ axes = [ax2, ax3]
 colors = ['#005f60', '#249ea0']
 
 for i, ccd in enumerate([first, second]):
-    lc = ccd['subtracted'][:,10,10] * np.nanmedian(convert_mag(ccd['raw'][:,10,10]))
+
+    # Calculate the TESS magnitude
+    summed_tpf = np.nansum(ccd['raw'][ccd['good_frames']==1], axis=0)
+    value = summed_tpf[10,10]
+
+    dur = (len(ccd['raw'][ccd['good_frames']==1])*200*units.s).value
+
+    T = -2.5*np.log10(value/dur)+20.44
+
+    lc = ccd['subtracted'][:,10,10] * T
     time = ccd['time'] + 2400000.5 - 2457000
 
     if i == 1:
@@ -45,17 +47,18 @@ for i, ccd in enumerate([first, second]):
     m = medfilt(lc[q], 11)
     ax1.plot(time[q], m, 'k')
 
-    frequency, power = LombScargle(time[q]*units.day, m).autopower(minimum_frequency=1.0/(120.0*units.hour),
-                                                                       maximum_frequency=1.0/(1.0*units.hour))
+    frequency, power = LombScargle(time[q]*units.day, m).autopower(minimum_frequency=1.0/(70.0*units.hour),
+                                                                   maximum_frequency=1.0/(1.0*units.hour))
     axes[i].plot(1.0/frequency, power, color='k')
-    axes[i].set_xscale('log')
+    #axes[i].set_xscale('log')
     axes[i].set_xlabel('Period [hours]', fontsize=16)
+    axes[i].set_xlim(1,70)
 
 
 ax1.set_xlabel('Time [BJD - 2457000]', fontsize=16)
 
 ax1.set_ylabel('TESS Magnitude', fontsize=16)
-ax1.set_ylim(20.4, 19.4)
+ax1.set_ylim(20.0, 19.2)
 ax1.set_xlim(3802.5, 3828.5)
 
 ax2.set_ylabel('Power', fontsize=16)
