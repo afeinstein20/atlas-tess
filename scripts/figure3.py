@@ -32,7 +32,10 @@ ax1.text(0.8, 0.8, "41''", color='w')
 ax1.set_xlim(-0.5, 16.5)
 ax1.set_ylim(-0.5, 16.5)
 
-ax2.plot(time, tpf[:,10,10], color='k')
+mask = np.zeros(tpf[0].shape)
+mask[9:12, 9:12] = 1.0
+lc = np.nansum(tpf*mask, axis=(1,2))
+ax2.plot(time, lc / np.nanmedian(lc), color='k')
 
 q = time > 3804
 freq, power = LombScargle(time*units.day, tpf[:,10,10]).autopower(minimum_frequency=1.0/(50*units.hour),
@@ -40,7 +43,7 @@ freq, power = LombScargle(time*units.day, tpf[:,10,10]).autopower(minimum_freque
 
 
 ax2.set_xlabel('Time [BJD - 2457000]', fontsize=16)
-ax2.set_ylabel('Normalized Counts', fontsize=16)
+ax2.set_ylabel('Normalized Flux', fontsize=16)
 plt.subplots_adjust(wspace=0.2)
 
 plt.savefig('../figures/asteroid_recovery.pdf', bbox_inches='tight', dpi=300)
