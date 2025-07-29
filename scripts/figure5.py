@@ -38,7 +38,7 @@ for i, ccd in enumerate([first, second]):
     time = ccd['time'] + 2400000.5 - 2457000
 
     if i == 1:
-        q = (time > 3817.3) & (time < 3827.5)
+        q = (time >= 3818) & (time < 3827.8)
     else:
         q = time > 3800
 
