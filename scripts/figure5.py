@@ -2,6 +2,7 @@ import numpy as np
 from astropy import units
 import matplotlib.pyplot as plt
 from astropy.table import Table
+from scipy.signal import medfilt
 from matplotlib.gridspec import GridSpec
 from astropy.timeseries import LombScargle
 
@@ -41,9 +42,12 @@ for i, ccd in enumerate([first, second]):
 
     ax1.plot(time[q], lc[q], color=colors[i])
 
-    frequency, power = LombScargle(time[q]*units.day, lc[q]).autopower(minimum_frequency=1.0/(120.0*units.hour),
+    m = medfilt(lc[q], 11)
+    ax1.plot(time[q], m, 'k')
+
+    frequency, power = LombScargle(time[q]*units.day, m).autopower(minimum_frequency=1.0/(120.0*units.hour),
                                                                        maximum_frequency=1.0/(1.0*units.hour))
-    axes[i].plot(1.0/frequency, power, color=colors[i])
+    axes[i].plot(1.0/frequency, power, color='k')
     axes[i].set_xscale('log')
     axes[i].set_xlabel('Period [hours]', fontsize=16)
 
@@ -55,6 +59,9 @@ ax1.set_ylim(20.4, 19.4)
 ax1.set_xlim(3802.5, 3828.5)
 
 ax2.set_ylabel('Power', fontsize=16)
+
+ax2.set_ylim(0,0.035)
+ax3.set_ylim(0,0.035)
 
 plt.subplots_adjust(hspace=0.3)
 
