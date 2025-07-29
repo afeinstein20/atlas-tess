@@ -62,9 +62,7 @@ xticks_minor = np.arange(xmin, xmax, 1)
 yticks_major = np.arange(ymin, ymax, 0.2)
 yticks_minor = np.arange(ymin, ymax, 0.05)
 
-print(jdoff, absmag)
-
-c1 = '#f78104'
+c1 = '#de4f0d'
 c2 = '#555a5a'
 
 # Plot 3I/ATLAS data (non-TESS)
@@ -120,7 +118,6 @@ jdoff_to_r = lambda jdoff: np.interp(jdoff + 2460800, eph3i['datetime_jd'], eph3
 r_to_jdoff = lambda r: np.interp(r, eph3i['r'][::-1], eph3i['datetime_jd'][::-1]) - 2460800
 ax2 = axPlot.secondary_xaxis('top', functions=(jdoff_to_r, r_to_jdoff))
 ax2.set_xticks(xticks2_major)
-print(xticks2_major)
 ax2.set_xticks(xticks2_minor,minor=True)
 ax2.set_xlabel('$r$ [au]', fontsize=18)
 #ax2.tick_params(axis='both',which='major',labelsize=18)
