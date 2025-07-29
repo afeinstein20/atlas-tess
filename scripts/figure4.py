@@ -29,7 +29,7 @@ ax2.imshow(np.nansum(tpf2[q], axis=0)[2:,2:], aspect='auto',
                      origin='lower')
 
 for ax in [ax1, ax2]:
-    ax.plot(8,8,'ro', ms=70, color="none", markeredgecolor='r', markeredgewidth=3)
+    ax.plot(8,8,'o', ms=70, color="none", markeredgecolor='#de4f0d', markeredgewidth=3)
     ax.set_xticks([])
     ax.set_yticks([])
 

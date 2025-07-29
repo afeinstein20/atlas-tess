@@ -22,7 +22,7 @@ fig, (ax1, ax2) = plt.subplots(ncols=2, nrows=1, figsize=(14,3),
 
 im = ax1.imshow(np.nansum(tpf, axis=0)[2:,2:], aspect='auto',
                 origin='lower', vmin=4400, vmax=5000)
-ax1.plot(8,8,'ro', ms=70, color="none", markeredgecolor='r', markeredgewidth=3)
+ax1.plot(8,8,'o', ms=70, color="none", markeredgecolor='#de4f0d', markeredgewidth=3)
 ax1.set_xticks([])
 ax1.set_yticks([])
 ax2.set_title('896 Sphinx (A918 PE)', fontsize=16)
