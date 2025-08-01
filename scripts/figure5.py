@@ -5,14 +5,15 @@ from astropy.table import Table
 from scipy.signal import medfilt
 from matplotlib.gridspec import GridSpec
 from astropy.timeseries import LombScargle
+from lightkurve.lightcurve import LightCurve as LC
 
 
 rc = Table.read('../rcParams.txt', format='csv')
 for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
 
-first = np.load('../data/stacked_3I_2-3.npy', allow_pickle=True).item()
-second= np.load('../data/stacked_3I_1-2.npy', allow_pickle=True).item()
+first = np.load('../data/stacked_3I_2-3_v3.npy', allow_pickle=True).item()
+second= np.load('../data/stacked_3I_1-2_v3.npy', allow_pickle=True).item()
 
 fig = plt.figure(figsize=(12,7))
 
@@ -26,46 +27,52 @@ colors = ['#005f60', '#249ea0']
 
 for i, ccd in enumerate([first, second]):
 
-    # Calculate the TESS magnitude
-    summed_tpf = np.nansum(ccd['raw'][ccd['good_frames']==1], axis=0)
-    value = summed_tpf[10,10]
+    good = ccd['good_frames'] == 0
 
-    dur = (len(ccd['raw'][ccd['good_frames']==1])*200*units.s).value
-
-    T = -2.5*np.log10(value/dur)+20.44
-
-    lc = ccd['subtracted'][:,10,10] * T
+    lc = ccd['subtracted'][:,9,9]
+    lc_err = ccd['err_sub'][:,9,9]/100
     time = ccd['time'] + 2400000.5 - 2457000
 
     if i == 1:
         q = (time >= 3818) & (time < 3827.8)
     else:
-        q = time > 3800
+        q = time > 3804
 
-    ax1.plot(time[q], lc[q], color=colors[i])
+    print(time[q])
+    ax1.errorbar(time[q], lc[q], yerr=lc_err[q],
+                 marker='.', linestyle='', alpha=0.4, color=colors[i],
+                 zorder=0)
 
-    m = medfilt(lc[q], 11)
-    ax1.plot(time[q], m, 'k')
+    # binned to 36 minutes
+    lk = LC(time=time[q]*units.day, flux=lc[q],
+            flux_err=lc_err[q]).bin(time_bin_size=36*units.min)
+    ax1.errorbar(lk.time.value, lk.flux.value, yerr=lk.flux_err.value,
+                 marker='o', color='k', linestyle='', alpha=0.7)
 
-    frequency, power = LombScargle(time[q]*units.day, m).autopower(minimum_frequency=1.0/(70.0*units.hour),
-                                                                   maximum_frequency=1.0/(1.0*units.hour))
-    axes[i].plot(1.0/frequency, power, color='k')
-    #axes[i].set_xscale('log')
+    min_freq = 1.0/(70.0*units.hour)
+    max_freq = 1.0/(1.0*units.hour)
+
+    ls = lk.to_periodogram(minimum_frequency=min_freq,
+                           maximum_frequency=max_freq)
+
+    axes[i].plot(ls.period.to(units.hour), ls.power, color='k')
     axes[i].set_xlabel('Period [hours]', fontsize=16)
     axes[i].set_xlim(1,70)
+
 
 
 ax1.set_xlabel('Time [BJD - 2457000]', fontsize=16)
 
 ax1.set_ylabel('TESS Magnitude', fontsize=16)
-ax1.set_ylim(20.0, 19.2)
-ax1.set_xlim(3802.5, 3828.5)
+#ax1.set_ylim(20.0, 19.2)
+ax1.set_xlim(3803.5, 3828.5)
 
 ax2.set_ylabel('Power', fontsize=16)
 
-ax2.set_ylim(0,0.035)
-ax3.set_ylim(0,0.035)
+ax2.set_ylim(0,0.0006)
+ax3.set_ylim(0,0.0006)
+ax3.set_yticklabels([])
 
 plt.subplots_adjust(hspace=0.3)
 
-plt.savefig('../figures/tess_lightcurve.pdf', dpi=300, bbox_inches='tight')
+plt.savefig('../figures/tess_lightcurve_v2.pdf', dpi=300, bbox_inches='tight')
