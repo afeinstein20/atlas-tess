@@ -1,6 +1,6 @@
-# Precovery of 3I/ATLAS in the TESS Full-Frame Images
+# The data for "Precovery of 3I/ATLAS from TESS Suggests Possible Distant Activity"
 
-Data and Python scripts for Feinstein, Noonan, & Seligman (in preparation)
+Data and Python scripts for Feinstein, Noonan, & Seligman (submitted to AAS Journals)
 
 We note that several data products are too large to be hosted on GitHub. These include:
 - stacked_3I_1-2.npy
