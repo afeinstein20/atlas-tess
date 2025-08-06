@@ -2,10 +2,10 @@ import numpy as np
 from astropy import units
 import matplotlib.pyplot as plt
 from astropy.table import Table
-from scipy.signal import medfilt
 from matplotlib.gridspec import GridSpec
 from matplotlib.patches import Rectangle
 from astropy.timeseries import LombScargle
+from lightkurve.lightcurve import LightCurve
 
 
 # Set the rcParams
@@ -26,18 +26,19 @@ bkg1 = first['subtracted'][:,7,12][q]
 
 # Camera 1 CCD 2 data
 time2 = second['time'] + 2400000.5 - 2457000
-q = (second['good_frames'] == 0) & (time2 > 3818) & (time2 < 3828)
+q = (time2 > 3818) & (time2 < 3828) & (second['good_frames'] == 0)
 
 time2 = time2[q]
 lc2 = second['subtracted'][:,9,9][q]
 bkg2 = second['subtracted'][:,7,12][q]
 
 # Periodogram function
-def periodogram(t, f, maxp=1*units.hour, minp=3*units.day):
-    med = medfilt(f, 11)
-    ls = LombScargle(t*units.day, med).autopower(minimum_frequency=1.0/minp.to(units.day),
-                                                 maximum_frequency=1.0/maxp.to(units.day))
-    return ls, med
+def periodogram(t, f, maxp=1*units.hour, minp=70*units.hour):
+    lk = LightCurve(time=t*units.day, flux=f+1.0).bin(time_bin_size=36*units.minute)
+    ls = lk.to_periodogram(minimum_frequency=1.0/minp,
+                           maximum_frequency=1.0/maxp)
+
+    return ls, lk
 
 #########################
 #### Make the Figure ####
@@ -64,10 +65,10 @@ axes[0].add_patch(rect)
 
 # Make the Lomb-Scargle Periodograms
 bkg_23, bk23 = periodogram(time1, bkg1)
-axes[1].plot((1.0/bkg_23[0]).to(units.hour), bkg_23[1], color=bc)
+axes[1].plot((bkg_23.period).to(units.hour), bkg_23.power, color=bc, lw=2)
 
 ls_23, m23 = periodogram(time1, lc1)
-axes[1].plot((1.0/ls_23[0]).to(units.hour), ls_23[1], color=dc, lw=2)
+axes[1].plot((ls_23.period).to(units.hour), ls_23.power, color=dc, lw=2)
 
 ##################
 # Camera 1 CCD 2 #
@@ -90,10 +91,10 @@ axes[2].add_patch(rect)
 
 # Make the Lomb-Scargle Periorograms
 bkg_12, mb12 = periodogram(time2, bkg2)
-axes[3].plot((1.0/bkg_12[0]).to(units.hour), bkg_12[1], color=bc)
+axes[3].plot((bkg_12.period).to(units.hour), bkg_12.power, color=bc, lw=2)
 
 ls_12, m12 = periodogram(time2, lc2)
-axes[3].plot((1.0/ls_12[0]).to(units.hour), ls_12[1], color=dc, lw=2)
+axes[3].plot((ls_12.period).to(units.hour), ls_12.power, color=dc, lw=2)
 
 
 axes[3].set_xlabel('Period [hours]')
@@ -112,8 +113,8 @@ axes[1].legend()
 for i in [0,2]:
     axes[i].set_xticks([])
     axes[i].set_yticks([])
-axes[3].set_ylim(0,0.06)
-axes[1].set_ylim(0,0.04)
+#axes[3].set_ylim(0,0.06)
+#axes[1].set_ylim(0,0.04)
 axes[1].set_xticklabels([])
 
 axes[0].set_ylabel('Camera 2 CCD 3')
