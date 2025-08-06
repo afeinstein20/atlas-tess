@@ -7,7 +7,6 @@ from matplotlib.gridspec import GridSpec
 from astropy.timeseries import LombScargle
 from lightkurve.lightcurve import LightCurve as LC
 
-
 rc = Table.read('../rcParams.txt', format='csv')
 for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
@@ -30,13 +29,13 @@ for i, ccd in enumerate([first, second]):
     good = ccd['good_frames'] == 0
 
     lc = np.nansum(ccd['subtracted'][:,8:11,8:11], axis=(1,2))
-    lc_err = np.sqrt(np.nansum(ccd['err_sub'][:,8:11,8:11]**2.0, axis=(1,2)))*2.0
+    lc_err = np.sqrt(np.nansum(ccd['err_sub'][:,8:11,8:11]**2.0, axis=(1,2)))
     time = ccd['time'] + 2400000.5 - 2457000
 
     if i == 1:
-        q = (time >= 3818) & (time < 3827.8) & (lc < 50) & (lc > -50)
+        q = (time >= 3818) & (time < 3827.8) & (good==0)
     else:
-        q = (time > 3804.5) & (lc < 50) & (lc > -50)
+        q = (time > 3804.5) & (good==0)
 
     lk = LC(time=time[q]*units.day, flux=lc[q], flux_err=lc_err[q]).normalize()
 
@@ -60,19 +59,15 @@ for i, ccd in enumerate([first, second]):
     axes[i].set_xlim(1, 70)
 
 
-
 ax1.set_xlabel('Time [BJD - 2457000]', fontsize=16)
 ax1.set_ylabel('Normalized Flux', fontsize=16)
-ax1.set_ylim(-100, 100)
+ax1.set_ylim(-15, 15)
 ax1.set_xlim(3803.5, 3828.5)
 
 ax2.set_ylabel('Power', fontsize=16)
 
-#ax2.set_ylim(0,0.0006)
-#ax3.set_ylim(0,0.0006)
 ax3.set_yticklabels([])
 
 plt.subplots_adjust(hspace=0.3)
 
-plt.show()
-#plt.savefig('../figures/tess_lightcurve_v2.pdf', dpi=300, bbox_inches='tight')
+plt.savefig('../figures/tess_lightcurve_v2.pdf', dpi=300, bbox_inches='tight')
