@@ -21,16 +21,16 @@ second= np.load('../data/stacked_3I_1-2_v4.npy', allow_pickle=True).item()
 time1 = first['time'] + 2400000.5 - 2457000
 q = (time1 > 3804) & (first['good_frames'] == 0)
 time1 = time1[q]
-lc1 = first['subtracted'][:,9,9][q]
-bkg1 = first['subtracted'][:,7,12][q]
+lc1 = first['subtracted'][:,8:11,8:11][q]
+bkg1 = first['subtracted'][:,3:6,3:6][q]
 
 # Camera 1 CCD 2 data
 time2 = second['time'] + 2400000.5 - 2457000
 q = (time2 > 3818) & (time2 < 3828) & (second['good_frames'] == 0)
 
 time2 = time2[q]
-lc2 = second['subtracted'][:,9,9][q]
-bkg2 = second['subtracted'][:,7,12][q]
+lc2 = second['subtracted'][:,8:11,8:11][q]
+bkg2 = second['subtracted'][:,3:6,3:6][q]
 
 # Periodogram function
 def periodogram(t, f, maxp=1*units.hour, minp=70*units.hour):
@@ -56,10 +56,10 @@ q = (first['good_frames'] == 0)
 axes[0].imshow(np.nanmedian(first['subtracted'][q], axis=0), aspect='auto', cmap='Greys_r')
 
 # Plot the apertures
-rect = Rectangle((8.25, 8.25), 1.5, 1.5, edgecolor=dc, facecolor='none', lw=3)
+rect = Rectangle((7.25, 7.25), 3.45, 3.45, edgecolor=dc, facecolor='none', lw=3)
 axes[0].add_patch(rect)
 
-rect = Rectangle((4.25, 9.25), 1.5, 1.5, edgecolor=bc, facecolor='none', lw=3)
+rect = Rectangle((2.25, 2.25), 3.45, 3.45, edgecolor=bc, facecolor='none', lw=3)
 axes[0].add_patch(rect)
 
 
@@ -82,12 +82,11 @@ axes[2].imshow(np.nanmedian(second['subtracted'][q], axis=0),
                cmap='Greys_r')
 
 # Plot the apertures
-rect = Rectangle((8.25, 8.25), 1.5, 1.5, edgecolor=dc, facecolor='none', lw=3)
+rect = Rectangle((7.25, 7.25), 3.45, 3.45, edgecolor=dc, facecolor='none', lw=3)
 axes[2].add_patch(rect)
 
-rect = Rectangle((4.25, 9.25), 1.5, 1.5, edgecolor=bc, facecolor='none', lw=3)
+rect = Rectangle((2.25, 2.25), 3.45, 3.45, edgecolor=bc, facecolor='none', lw=3)
 axes[2].add_patch(rect)
-
 
 # Make the Lomb-Scargle Periorograms
 bkg_12, mb12 = periodogram(time2, bkg2)
