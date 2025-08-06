@@ -64,8 +64,8 @@ xmin, xmax = 2, 50
 ymin, ymax = 10, 15
 xticks_major = np.arange(xmin, xmax, 5)
 xticks_minor = np.arange(xmin, xmax, 1)
-yticks_major = np.arange(ymin, ymax, 0.2)
-yticks_minor = np.arange(ymin, ymax, 0.05)
+yticks_major = np.arange(ymin, ymax, 0.5)
+yticks_minor = np.arange(ymin, ymax, 0.1)
 
 c1 = '#de4f0d'
 c2 = '#555a5a'
@@ -110,11 +110,11 @@ axPlot.tick_params(which='both',direction='in')
 axPlot.xaxis.set_major_formatter(majorFormatter0)
 axPlot.yaxis.set_major_formatter(majorFormatter1)
 axPlot.set_xlim([2,47])
-axPlot.set_ylim([11.9,13.0])
+axPlot.set_ylim([11.9,14.4])
 axPlot.invert_yaxis()
 axPlot.set_xlabel('Time [JD - 2460800]',fontsize=18)
 axPlot.set_ylabel(r'$H_V$ [mag]',fontsize=18)
-axPlot.legend(fontsize=18)
+axPlot.legend(fontsize=18, ncol=2, loc='lower right')
 
 xticks2_major = np.arange(4,8,0.2)
 xticks2_minor = np.arange(4,8,0.05)
@@ -136,4 +136,4 @@ ax2.tick_params(axis='both',which='minor',direction='in',labelsize=0,top=True,bo
 plt.draw()
 
 # Save to a File
-plt.savefig('../figures/secular_lc_atlas.pdf',format = 'pdf',dpi=400,bbox_inches='tight')
+plt.savefig('../figures/secular_lc_atlas_v2.pdf',format = 'pdf',dpi=400,bbox_inches='tight')

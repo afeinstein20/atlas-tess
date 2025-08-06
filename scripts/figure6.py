@@ -14,8 +14,8 @@ for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
 
 # Load in the data
-first = np.load('../data/stacked_3I_2-3_v3.npy', allow_pickle=True).item()
-second= np.load('../data/stacked_3I_1-2_v3.npy', allow_pickle=True).item()
+first = np.load('../data/stacked_3I_2-3_v4.npy', allow_pickle=True).item()
+second= np.load('../data/stacked_3I_1-2_v4.npy', allow_pickle=True).item()
 
 # Camera 2 CCD 3 data
 time1 = first['time'] + 2400000.5 - 2457000

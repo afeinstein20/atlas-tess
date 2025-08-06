@@ -12,8 +12,8 @@ rc = Table.read('../rcParams.txt', format='csv')
 for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
 
-first = np.load('../data/stacked_3I_2-3_v3.npy', allow_pickle=True).item()
-second= np.load('../data/stacked_3I_1-2_v3.npy', allow_pickle=True).item()
+first = np.load('../data/stacked_3I_2-3_v4.npy', allow_pickle=True).item()
+second= np.load('../data/stacked_3I_1-2_v4.npy', allow_pickle=True).item()
 
 fig = plt.figure(figsize=(12,7))
 
@@ -29,24 +29,24 @@ for i, ccd in enumerate([first, second]):
 
     good = ccd['good_frames'] == 0
 
-    lc = ccd['subtracted'][:,9,9]
-    lc_err = ccd['err_sub'][:,9,9]/100
+    lc = np.nansum(ccd['subtracted'][:,8:11,8:11], axis=(1,2))
+    lc_err = np.sqrt(np.nansum(ccd['err_sub'][:,8:11,8:11]**2.0, axis=(1,2)))*2.0
     time = ccd['time'] + 2400000.5 - 2457000
 
     if i == 1:
-        q = (time >= 3818) & (time < 3827.8)
+        q = (time >= 3818) & (time < 3827.8) & (lc < 50) & (lc > -50)
     else:
-        q = time > 3804
+        q = (time > 3804.5) & (lc < 50) & (lc > -50)
 
-    print(time[q])
-    ax1.errorbar(time[q], lc[q], yerr=lc_err[q],
+    lk = LC(time=time[q]*units.day, flux=lc[q], flux_err=lc_err[q]).normalize()
+
+    ax1.errorbar(lk.time.value, lk.flux.value, yerr=lk.flux_err.value,
                  marker='.', linestyle='', alpha=0.4, color=colors[i],
                  zorder=0)
 
     # binned to 36 minutes
-    lk = LC(time=time[q]*units.day, flux=lc[q],
-            flux_err=lc_err[q]).bin(time_bin_size=36*units.min)
-    ax1.errorbar(lk.time.value, lk.flux.value, yerr=lk.flux_err.value,
+    binned = lk.bin(time_bin_size=36*units.min)
+    ax1.errorbar(binned.time.value, binned.flux.value, yerr=binned.flux_err.value,
                  marker='o', color='k', linestyle='', alpha=0.7)
 
     min_freq = 1.0/(70.0*units.hour)
@@ -57,22 +57,22 @@ for i, ccd in enumerate([first, second]):
 
     axes[i].plot(ls.period.to(units.hour), ls.power, color='k')
     axes[i].set_xlabel('Period [hours]', fontsize=16)
-    axes[i].set_xlim(1,70)
+    axes[i].set_xlim(1, 70)
 
 
 
 ax1.set_xlabel('Time [BJD - 2457000]', fontsize=16)
-
-ax1.set_ylabel('TESS Magnitude', fontsize=16)
-#ax1.set_ylim(20.0, 19.2)
+ax1.set_ylabel('Normalized Flux', fontsize=16)
+ax1.set_ylim(-100, 100)
 ax1.set_xlim(3803.5, 3828.5)
 
 ax2.set_ylabel('Power', fontsize=16)
 
-ax2.set_ylim(0,0.0006)
-ax3.set_ylim(0,0.0006)
+#ax2.set_ylim(0,0.0006)
+#ax3.set_ylim(0,0.0006)
 ax3.set_yticklabels([])
 
 plt.subplots_adjust(hspace=0.3)
 
-plt.savefig('../figures/tess_lightcurve_v2.pdf', dpi=300, bbox_inches='tight')
+plt.show()
+#plt.savefig('../figures/tess_lightcurve_v2.pdf', dpi=300, bbox_inches='tight')

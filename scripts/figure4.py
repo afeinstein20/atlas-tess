@@ -9,11 +9,11 @@ for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
 
 # Load in the relevant data
-data1 = np.load('../data/stacked_3I_2-3_v3.npy', allow_pickle=True).item()
+data1 = np.load('../data/stacked_3I_2-3_v4.npy', allow_pickle=True).item()
 tpf1 = data1['subtracted'] * 1.0
 err1 = data1['err_sub'] * 1.0
 
-data2 = np.load('../data/stacked_3I_1-2_v3.npy', allow_pickle=True).item()
+data2 = np.load('../data/stacked_3I_1-2_v4.npy', allow_pickle=True).item()
 tpf2 = data2['subtracted'] * 1.0
 err2 = data2['err_sub'] * 1.0
 
@@ -23,14 +23,15 @@ err2 = data2['err_sub'] * 1.0
 
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2, figsize=(8, 10))
 
-im1 = ax1.imshow(np.nansum(tpf1, axis=0), aspect='auto',
-                 origin='lower', vmin=4398.5)
-im3 = ax3.imshow(np.sqrt(np.nansum(err1**2, axis=0)), aspect='auto', origin='lower',
+q = data1['good_frames'] == 0
+im1 = ax1.imshow(np.nanmedian(tpf1[q], axis=0), aspect='auto',
+                 origin='lower', vmin=0)
+im3 = ax3.imshow(np.sqrt(np.nansum(err1[q]**2, axis=0)), aspect='auto', origin='lower',
                  cmap='Greys')
 
 q = data2['good_frames'] == 0
-im2 = ax2.imshow(np.nansum(tpf2[q], axis=0), aspect='auto',
-                 origin='lower')
+im2 = ax2.imshow(np.nanmedian(tpf2[q], axis=0), aspect='auto',
+                 origin='lower', vmin=0, vmax=0.5)
 
 im4 = ax4.imshow(np.sqrt(np.nansum(err2[q]**2, axis=0)), aspect='auto',
                  origin='lower', cmap='Greys')
@@ -44,7 +45,7 @@ for i, ax in enumerate([ax1, ax2, ax3, ax4]):
     ax.set_yticks([])
     cbar = plt.colorbar(ims[i], orientation='horizontal')
     if i < 2:
-        cbar.set_label('Summed Counts')
+        cbar.set_label('Median Counts s$^{-1}$')
         fc = 'w'
     else:
         cbar.set_label(r'$\sigma$ Counts')
