@@ -9,53 +9,41 @@ for name, val in zip(rc['name'], rc['value']):
     plt.rcParams[name] = val
 
 # Load in the relevant data
-data1 = np.load('../data/stacked_3I_2-3_v4.npy', allow_pickle=True).item()
-tpf1 = data1['subtracted'] * 1.0
-err1 = data1['err_sub'] * 1.0
-
-data2 = np.load('../data/stacked_3I_1-2_v4.npy', allow_pickle=True).item()
-tpf2 = data2['subtracted'] * 1.0
-err2 = data2['err_sub'] * 1.0
+data = np.load('../data/stacked_A918PE_2-3.npy', allow_pickle=True).item()
+tpf = data['subtracted'] * 1.0
+time = (data['time']+2400000.5)-2457000
 
 #################
 # Plot the data #
 #################
 
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(ncols=2, nrows=2, figsize=(8, 10))
+fig, (ax1, ax2) = plt.subplots(ncols=2, nrows=1, figsize=(14,3),
+                               gridspec_kw={'width_ratios':[0.3,1]})
 
-q = data1['good_frames'] == 0
-im1 = ax1.imshow(np.nanmedian(tpf1[q], axis=0), aspect='auto',
-                 origin='lower', vmin=0)
-im3 = ax3.imshow(np.sqrt(np.nansum(err1[q]**2, axis=0)), aspect='auto', origin='lower',
-                 cmap='Greys')
+im = ax1.imshow(np.nansum(tpf, axis=0)[2:,2:], aspect='auto',
+                origin='lower', vmin=4400, vmax=5000)
+ax1.plot(8,8,'o', ms=70, color="none", markeredgecolor='#de4f0d', markeredgewidth=3)
+ax1.set_xticks([])
+ax1.set_yticks([])
+ax2.set_title('896 Sphinx (A918 PE)', fontsize=16)
+ax1.axhline(0.5, 0.07, 0.172, color='w', zorder=10, lw=3)
+ax1.text(0.8, 0.8, "41''", color='w')
 
-q = data2['good_frames'] == 0
-im2 = ax2.imshow(np.nanmedian(tpf2[q], axis=0), aspect='auto',
-                 origin='lower', vmin=0, vmax=0.5)
+ax1.set_xlim(-0.5, 16.5)
+ax1.set_ylim(-0.5, 16.5)
 
-im4 = ax4.imshow(np.sqrt(np.nansum(err2[q]**2, axis=0)), aspect='auto',
-                 origin='lower', cmap='Greys')
+mask = np.zeros(tpf[0].shape)
+mask[9:12, 9:12] = 1.0
+lc = np.nansum(tpf*mask, axis=(1,2))
+ax2.plot(time, lc / np.nanmedian(lc), color='k')
 
-ims = [im1, im2, im3, im4]
-letter = ['(a)', '(b)', '(c)', '(d)']
+q = time > 3804
+freq, power = LombScargle(time*units.day, tpf[:,10,10]).autopower(minimum_frequency=1.0/(50*units.hour),
+                                                                        maximum_frequency=1.0/(5.0*units.hour))
 
-for i, ax in enumerate([ax1, ax2, ax3, ax4]):
-    ax.plot(9,9,'o', ms=70, color="none", markeredgecolor='#de4f0d', markeredgewidth=3)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    cbar = plt.colorbar(ims[i], orientation='horizontal')
-    if i < 2:
-        cbar.set_label('Median Counts s$^{-1}$')
-        fc = 'w'
-    else:
-        cbar.set_label(r'$\sigma$ Counts')
-        fc = 'k'
 
-    ax.axhline(0.5, 0.06, 0.15, color=fc, zorder=10, lw=3)
-    ax.text(0.5, 0.8, "41''", color=fc)
-    ax.text(0., 16.5, letter[i], color=fc, fontweight='bold')#backgroundcolor='k')
+ax2.set_xlabel('Time [BJD - 2457000]', fontsize=16)
+ax2.set_ylabel('Normalized Flux', fontsize=16)
+plt.subplots_adjust(wspace=0.2)
 
-ax1.set_title('Camera 2 CCD 3', fontsize=16)
-ax2.set_title('Camera 1 CCD 2', fontsize=16)
-
-plt.savefig('../figures/3I_deepstack_v2.pdf', bbox_inches='tight', dpi=300)
+plt.savefig('../figures/asteroid_recovery.pdf', bbox_inches='tight', dpi=300)
