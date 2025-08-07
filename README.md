@@ -1,4 +1,4 @@
-# The data for "Precovery of 3I/ATLAS from TESS Suggests Possible Distant Activity"
+# The data and analysis scripts for "Precovery of 3I/ATLAS from TESS Suggests Possible Distant Activity"
 
 Data and Python scripts for Feinstein, Noonan, & Seligman (submitted to AAS Journals)
 
