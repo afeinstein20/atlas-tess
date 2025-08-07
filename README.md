@@ -1,5 +1,7 @@
 # The data and analysis scripts for "Precovery of 3I/ATLAS from TESS Suggests Possible Distant Activity"
 
+<a href="https://adina.feinste.in/files/2507.21967v1.pdf"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.2597620.svg?colorB=3C0650" alt="Manuscript"></a>
+
 Data and Python scripts for Feinstein, Noonan, & Seligman (submitted to AAS Journals)
 
 We note that several data products are too large to be hosted on GitHub. These include:
