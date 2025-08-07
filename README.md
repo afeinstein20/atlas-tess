@@ -1,6 +1,8 @@
 # The data and analysis scripts for "Precovery of 3I/ATLAS from TESS Suggests Possible Distant Activity"
 
-<a href="https://adina.feinste.in/files/2507.21967v1.pdf"><img src="https://img.shields.io/badge/current_manuscript-2597620.svg?style=flat"/>
+<a href="https://adina.feinste.in/files/2507.21967v1.pdf"><img src="https://img.shields.io/badge/current_manuscript-2a9d8f.svg?style=flat"/>
+
+<a href="https://adina.feinste.in/files/2507.21967v1.pdf"><img src="https://img.shields.io/badge/revised_manuscript-e76f51.svg?style=flat"/>
 
 
 Data and Python scripts for Feinstein, Noonan, & Seligman (submitted to AAS Journals)
