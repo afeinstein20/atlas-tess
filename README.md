@@ -2,7 +2,7 @@
 
 <a href="https://adina.feinste.in/files/2507.21967v1.pdf"><img src="https://img.shields.io/badge/current_manuscript-2a9d8f.svg?style=flat"/>
 <a href="https://adina.feinste.in/files/atlas_tess.pdf"><img src="https://img.shields.io/badge/revised_manuscript-e76f51.svg?style=flat"/>
-<a href="https://adina.feinste.in/files/2507.21967v1.pdf"><img src="https://zenodo.org/badge/DOI/12.3456/zenodo.0000000.svg?colorB=3C0650" alt="DOI"></a>
+<a href="https://afeinstein20.github.io/index.html#atlas"><img src="https://zenodo.org/badge/DOI/12.3456/zenodo.0000000.svg?colorB=3C0650" alt="DOI"></a>
 
 
 Data and Python scripts for Feinstein, Noonan, & Seligman (submitted to AAS Journals)
