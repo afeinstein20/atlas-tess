@@ -31,8 +31,8 @@ axes[0].set_ylabel('X Pixel Row')
 
 axes[1].imshow(tpf23[good23==1][100], aspect='auto', vmin=100, vmax=1000, origin='lower')
 
-axes[0].text(x=0., y=17, s='(a)', color='w', fontweight='bold')
-axes[1].text(x=0., y=17, s='(b)', color='w', fontweight='bold')
+axes[0].text(x=0., y=1.5, s='(a)', color='w', fontweight='bold')
+axes[1].text(x=0., y=1.5, s='(b)', color='w', fontweight='bold')
 
 plt.colorbar(im, cax=axes[2], label='Counts s$^{-1}$')
 
@@ -42,8 +42,8 @@ axes[3].set_ylabel('X Pixel Row')
 
 axes[4].imshow(tpf12[good12==1][100], aspect='auto', vmin=100, vmax=5000, origin='lower')
 
-axes[3].text(x=0., y=17, s='(c)', color='w', fontweight='bold')
-axes[4].text(x=0., y=17, s='(d)', color='w', fontweight='bold')
+axes[3].text(x=0., y=1.5, s='(c)', color='w', fontweight='bold')
+axes[4].text(x=0., y=1.5, s='(d)', color='w', fontweight='bold')
 
 plt.colorbar(im, cax=axes[5], label='Counts s$^{-1}$')
 
