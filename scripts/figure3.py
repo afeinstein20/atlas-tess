@@ -17,6 +17,10 @@ data2 = np.load('../data/stacked_3I_1-2_v4.npy', allow_pickle=True).item()
 tpf12 = data2['raw'] * 1.0
 good12 = data2['good_frames'] + 0
 
+# Plotting mask
+mask = np.zeros(tpf12[0].shape)
+mask[4:15, 4:15] = 1
+
 fig, axes = plt.subplots(ncols=3, nrows=2, figsize=(8,8),
                          gridspec_kw={'width_ratios':[1,1,0.1]})
 axes = axes.reshape(-1)
@@ -45,6 +49,7 @@ plt.colorbar(im, cax=axes[5], label='Counts s$^{-1}$')
 
 # Add the patches
 for i in range(len(axes)):
+    axes[i].imshow(mask, aspect='auto', cmap='Greys_r', alpha=0.2)
     patch = Rectangle((3.5,3.5), 11, 11, facecolor='none', linewidth=3, edgecolor='r')
     axes[i].add_patch(patch)
 
